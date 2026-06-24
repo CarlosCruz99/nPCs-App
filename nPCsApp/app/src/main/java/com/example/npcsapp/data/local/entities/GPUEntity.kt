@@ -1,12 +1,12 @@
-package com.example.npcsapp.data
+package com.example.npcsapp.data.local.entities
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
-data class SupabaseResponse(
-    val gpu: GPU
-)
-
-data class GPU (
+@Entity(tableName = "gpu")
+data class GPUEntity (
+    @PrimaryKey
     val id: Int,
     val name: String,
     val price: Float,
