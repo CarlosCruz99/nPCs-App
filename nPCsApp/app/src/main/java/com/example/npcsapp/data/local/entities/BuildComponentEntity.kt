@@ -11,5 +11,6 @@ data class BuildComponentEntity(
     val id: Long = 0,
     val buildId: Long,
     val componentType: String,
-    val componentId: Int
+    val componentId: Int,
+    val displayName: String = ""
 )

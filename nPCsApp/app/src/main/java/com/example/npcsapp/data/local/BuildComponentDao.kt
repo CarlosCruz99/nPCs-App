@@ -23,4 +23,7 @@ interface BuildComponentDao {
     @Query("DELETE FROM build_components WHERE buildId = :buildId")
     suspend fun deleteAllComponentsForBuild(buildId: Long)
 
+    @Query("SELECT * FROM build_components WHERE buildId = :buildId AND componentType = :componentType LIMIT 1")
+    suspend fun getComponentForBuild(buildId: Long, componentType: String): BuildComponentEntity?
+
 }

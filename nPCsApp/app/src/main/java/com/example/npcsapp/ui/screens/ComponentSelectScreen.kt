@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,23 +54,35 @@ fun ComponentSelectScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { },
+                title = { Text("Seleccionar GPU") },
                 navigationIcon = {
                     IconButton(onClick = { onBack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retornar")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { gpuViewModel.refreshGPUs() }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Recargar GPUs")
                     }
                 }
             )
         }
     ) { paddingValues ->
         when (componentId){
-            1L -> when {
-                isLoading -> CircularProgressIndicator()
-                gpus.isEmpty() -> Text("No GPUs found")
-                else -> {
+            1L -> {
+                if (isLoading) {
+                    Column(
+                        modifier = Modifier.padding(paddingValues).fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else if (gpus.isEmpty()) {
+                    Text("No se encontraron GPUs", modifier = Modifier.padding(paddingValues))
+                } else {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(paddingValues)
+                        modifier = Modifier.padding(paddingValues).padding(horizontal = 16.dp)
                     ) {
                         items(gpus) { gpu ->
                             val alreadyInBuild = activeComponents.any {
@@ -79,25 +92,18 @@ fun ComponentSelectScreen(
                                 gpu = gpu,
                                 alreadyInBuild = alreadyInBuild,
                                 canAdd = activeBuildId != null,
-                                onAddToBuild = { buildViewModel.addGPUToBuild(gpu.toGPU()) }
+                                onAddToBuild = {
+                                    buildViewModel.addGPUToBuild(gpu.toGPU())
+                                    onBack()
+                                }
                             )
                         }
                     }
                 }
             }
-
         }
     }
-
-
-
 }
-
-@Composable
-fun ComponentList(){
-
-}
-
 
 @Composable
 fun GPUCard(
@@ -116,8 +122,7 @@ fun GPUCard(
                 model=gpu.image,
                 contentDescription = gpu.name,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(30.dp),
-                placeholder = ColorPainter(Color.DarkGray)
+                modifier = Modifier.size(50.dp),
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -130,16 +135,18 @@ fun GPUCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
             when {
-                alreadyInBuild -> Text("✓ Added", color = MaterialTheme.colorScheme.primary)
-                canAdd -> OutlinedButton(onClick = onAddToBuild) { Text("Add") }
-                else -> OutlinedButton(onClick = {}, enabled = false) { Text("Add") }
+                alreadyInBuild -> Text("Agregado", color = MaterialTheme.colorScheme.primary)
+                canAdd -> OutlinedButton(onClick = onAddToBuild) { Text("Agregar") }
+                else -> OutlinedButton(onClick = {}, enabled = false) { Text("Agregar") }
             }
         }
     }
 }
 
-// Extension to convert GPUEntity back to GPU domain model
 fun GPUEntity.toGPU() = GPU(
     id = id, name = name, price = price, chipset = chipset,
     memory = memory, coreClock = coreClock, coreBoost = coreBoost,

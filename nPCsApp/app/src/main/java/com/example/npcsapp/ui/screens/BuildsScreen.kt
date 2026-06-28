@@ -103,39 +103,6 @@ fun BuildsScreen(
         Column(
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
-            // Build selector row
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.spacedBy(8.dp)
-//            ) {
-//                Text("Active build:", style = MaterialTheme.typography.labelLarge)
-//                if (builds.isEmpty()) {
-//                    Text("None", color = MaterialTheme.colorScheme.onSurfaceVariant)
-//                } else {
-//                    var expanded by remember { mutableStateOf(false) }
-//                    Box {
-//                        OutlinedButton(onClick = { expanded = true }) {
-//                            val name = builds.find { it.buildId == activeBuildId }?.name ?: "Select…"
-//                            Text(name)
-//                        }
-//                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-//                            builds.forEach { build ->
-//                                DropdownMenuItem(
-//                                    text = { Text(build.name) },
-//                                    onClick = {
-//                                        buildViewModel.selectBuild(build.buildId)
-//                                        expanded = false
-//                                    }
-//                                )
-//                            }
-//                        }
-//                    }
-//                }
-////                IconButton(onClick = { showNewBuildDialog = true }) {
-////                    Icon(Icons.Default.Add, contentDescription = "New build")
-////                }
-//            }
-
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)

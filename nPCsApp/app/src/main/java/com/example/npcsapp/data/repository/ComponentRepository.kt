@@ -80,12 +80,19 @@ class ComponentRepository(
         buildDao.searchBuildWithComponentById(buildId)
 
     suspend fun addGPUToBuild(buildId: Long, gpu: GPU) {
+        val existing = buildComponentDao.getComponentForBuild(buildId, "GPU")
+        if (existing != null) {
+            buildComponentDao.deleteBuildComponent(existing)
+        }
+
         cacheGPU(gpu)
+
         buildComponentDao.insertBuildComponent(
             BuildComponentEntity(
                 buildId = buildId,
                 componentType = "GPU",
-                componentId = gpu.id
+                componentId = gpu.id,
+                displayName = gpu.name
             )
         )
     }

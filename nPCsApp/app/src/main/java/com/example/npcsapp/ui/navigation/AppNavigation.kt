@@ -50,12 +50,15 @@ fun nPCsApp(
             val id = backStackEntry
                 .arguments?.getLong("buildId") ?: 0
 
+            buildViewModel.selectBuild(id)
+
             BuildDetailScreen(
                 buildId = id,
                 buildViewModel = buildViewModel,
-                onBack = {navController.popBackStack()},
-                onNavigateToComponentDetail = { id ->
-                    navController.navigate("component_detail/${id}")
+                gpuViewModel = gpuViewModel,
+                onBack = { navController.popBackStack() },
+                onNavigateToComponentDetail = { componentId ->
+                    navController.navigate("component_detail/$componentId")
                 }
             )
         }

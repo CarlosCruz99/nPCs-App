@@ -12,7 +12,6 @@ import com.example.npcsapp.data.repository.ComponentRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlin.jvm.java
 
 class GPUViewModel(private val repository: ComponentRepository): ViewModel() {
     val gpuList = repository.gpus
@@ -29,7 +28,7 @@ class GPUViewModel(private val repository: ComponentRepository): ViewModel() {
         refreshGPUs()
     }
 
-    private fun refreshGPUs() {
+    fun refreshGPUs() {
         viewModelScope.launch {
             isLoading = true
 
