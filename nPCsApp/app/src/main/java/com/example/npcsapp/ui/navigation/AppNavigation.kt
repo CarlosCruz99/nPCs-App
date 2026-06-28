@@ -59,7 +59,10 @@ fun nPCsApp(
                 onBack = { navController.popBackStack() },
                 onNavigateToComponentDetail = { componentId ->
                     navController.navigate("component_detail/$componentId")
-                }
+                },
+                onNavigateToGpuDetail = { gpuId ->
+                    navController.navigate("gpu_detail/$gpuId")
+                },
             )
         }
 
@@ -75,8 +78,25 @@ fun nPCsApp(
                     componentId = id,
                     gpuViewModel = gpuViewModel,
                     buildViewModel = buildViewModel,
+                    onNavigateToGpuDetail = { gpuId ->
+                        navController.navigate("gpu_detail/$gpuId")
+                    },
                     onBack = {navController.popBackStack()}
                 )
+        }
+
+        composable(
+            "gpu_detail/{gpuId}",
+            arguments = listOf(navArgument("gpuId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val gpuId = backStackEntry.arguments?.getInt("gpuId") ?: 0
+
+            GPUDetailScreen(
+                gpuId = gpuId,
+                gpuViewModel = gpuViewModel,
+                buildViewModel = buildViewModel,
+                onBack = { navController.popBackStack() }
+            )
         }
 
 

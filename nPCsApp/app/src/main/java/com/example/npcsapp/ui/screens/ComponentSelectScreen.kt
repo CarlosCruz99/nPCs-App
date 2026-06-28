@@ -1,5 +1,6 @@
 package com.example.npcsapp.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,6 +45,7 @@ fun ComponentSelectScreen(
     componentId: Long,
     gpuViewModel: GPUViewModel,
     buildViewModel: BuildViewModel,
+    onNavigateToGpuDetail: (Int) -> Unit,
     onBack: () -> Unit
 ){
     val gpus by gpuViewModel.gpuList.collectAsState()
@@ -95,7 +97,8 @@ fun ComponentSelectScreen(
                                 onAddToBuild = {
                                     buildViewModel.addGPUToBuild(gpu.toGPU())
                                     onBack()
-                                }
+                                },
+                                onNavigateToDetail = { onNavigateToGpuDetail(gpu.id) }
                             )
                         }
                     }
@@ -110,9 +113,13 @@ fun GPUCard(
     gpu: GPUEntity,
     alreadyInBuild: Boolean,
     canAdd: Boolean,
-    onAddToBuild: () -> Unit
+    onAddToBuild: () -> Unit,
+    onNavigateToDetail: () -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+            .clickable { onNavigateToDetail() }
+    ) {
         Row(
             modifier = Modifier.padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,

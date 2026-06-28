@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -48,6 +49,7 @@ fun BuildDetailScreen(
     buildViewModel: BuildViewModel,
     gpuViewModel: GPUViewModel,
     onNavigateToComponentDetail: (Long) -> Unit,
+    onNavigateToGpuDetail: (Int) -> Unit,
     onBack: () -> Unit
 ){
     val components by buildViewModel.activeBuildComponents.collectAsState()
@@ -74,13 +76,13 @@ fun BuildDetailScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item{
-                //PcComponentSection("GPU", 1L, onNavigateToComponentDetail = {onNavigateToComponentDetail(it)})
                 PcComponentSection(
                     componentType = "GPU",
                     componentId = 1L,
                     gpuComponent = gpuComponent,
                     selectedGpu = selectedGpu,
                     onNavigateToComponentDetail = onNavigateToComponentDetail,
+                    onNavigateToGpuDetail = onNavigateToGpuDetail,
                     onRemove = { buildViewModel.removeComponent(it) }
                 )
             }
@@ -96,6 +98,7 @@ fun PcComponentSection(
     gpuComponent: BuildComponentEntity?,
     selectedGpu: GPUEntity?,
     onNavigateToComponentDetail: (Long) -> Unit,
+    onNavigateToGpuDetail: (Int) -> Unit,
     onRemove: (BuildComponentEntity) -> Unit
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -103,7 +106,7 @@ fun PcComponentSection(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onNavigateToComponentDetail(componentId) }
+                    .clickable { onNavigateToGpuDetail(selectedGpu.id) }
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -139,14 +142,24 @@ fun PcComponentSection(
                     )
                 }
 
-                // Remove button
-                IconButton(onClick = { onRemove(gpuComponent) }) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Quitar GPU",
-                        tint = MaterialTheme.colorScheme.error
-                    )
+                Column {
+                    IconButton(onClick = { onNavigateToComponentDetail(componentId) }) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Cambiar $componentType",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    IconButton(onClick = { onRemove(gpuComponent) }) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Quitar $componentType",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
+
             }
         } else {
             Row(
