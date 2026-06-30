@@ -10,6 +10,7 @@ import com.example.npcsapp.data.local.GPUDao
 import com.example.npcsapp.data.local.entities.BuildComponentEntity
 import com.example.npcsapp.data.local.entities.BuildEntity
 import com.example.npcsapp.data.local.entities.GPUEntity
+import kotlinx.coroutines.flow.Flow
 
 class ComponentRepository(
     private val gpuDao: GPUDao,
@@ -70,6 +71,8 @@ class ComponentRepository(
     val builds = buildDao.getAllBuilds()
 
     suspend fun createBuild(name: String): Long = buildDao.insertBuild(BuildEntity(name = name))
+
+    fun getBuildById(id: Long): Flow<BuildEntity?> = buildDao.getBuildById(id)
 
     suspend fun deleteBuild(build: BuildEntity) {
         buildComponentDao.deleteAllComponentsForBuild(build.buildId)

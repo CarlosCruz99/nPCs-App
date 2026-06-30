@@ -19,10 +19,12 @@ interface BuildDao {
     @Query("SELECT * FROM builds WHERE buildId = :buildId")
     fun searchBuildWithComponentById(buildId: Long): Flow<BuildWithComponents?>
 
+    @Query("SELECT * FROM builds WHERE buildId = :buildId")
+    fun getBuildById(buildId: Long): Flow<BuildEntity?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBuild(build: BuildEntity): Long
 
     @Delete
     suspend fun deleteBuild(build: BuildEntity)
-
 }

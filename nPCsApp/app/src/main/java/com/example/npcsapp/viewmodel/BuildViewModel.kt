@@ -17,8 +17,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.collections.emptyList
-import kotlin.getValue
-
 
 class BuildViewModel(private val repository: ComponentRepository) : ViewModel() {
 
@@ -28,6 +26,11 @@ class BuildViewModel(private val repository: ComponentRepository) : ViewModel() 
     private val _activeBuildId = MutableStateFlow<Long?>(null)
     val activeBuildId: StateFlow<Long?> = _activeBuildId
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val activeBuild: StateFlow<BuildEntity?> = _activeBuildId.flatMapLatest { id ->
+        if (id == null) flowOf(null)
+        else repository.getBuildById(id)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val activeBuildComponents: StateFlow<List<BuildComponentEntity>> =
