@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "650542883926",
+    "project_id": "npcs-app-cd1fc",
+    "storage_bucket": "npcs-app-cd1fc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:650542883926:android:2ba48b81df1cd3fdf0c7f7",
+        "android_client_info": {
+          "package_name": "com.example.npcsapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHE6RCXtaRx4opHEDqSHQUITWNrQ0nStk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

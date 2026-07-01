@@ -40,9 +40,13 @@ import com.example.npcsapp.ui.screens.ComponentSelectScreen
 import com.example.npcsapp.ui.screens.ComponentDetailScreen
 import com.example.npcsapp.ui.screens.HomeScreen
 import com.example.npcsapp.ui.screens.MarketScreen
+import com.example.npcsapp.ui.screens.ProfileScreen
 import com.example.npcsapp.ui.screens.SearchScreen
 import com.example.npcsapp.ui.screens.SellScreen
 import com.example.npcsapp.ui.screens.WelcomeScreen
+import com.example.npcsapp.ui.screens.auth.AuthViewModel
+import com.example.npcsapp.ui.screens.auth.LoginScreen
+import com.example.npcsapp.ui.screens.auth.RegisterScreen
 import com.example.npcsapp.ui.theme.NeonBlue
 import com.example.npcsapp.ui.theme.OnSurfaceVariant
 import com.example.npcsapp.ui.theme.PrimaryContainer
@@ -50,13 +54,10 @@ import com.example.npcsapp.ui.theme.SurfaceContainerHigh
 import com.example.npcsapp.viewmodel.BuildViewModel
 import com.example.npcsapp.viewmodel.ComponentViewModel
 
-// ── Sealed class: all 5 tabs ──────────────────────────────────────────────
-
 sealed class Screen(
     val route: String,
     val label: String,
     val icon: ImageVector,
-    /** false = tab button shown but does nothing yet */
     val enabled: Boolean = true
 ) {
     object Home : Screen(
@@ -67,8 +68,7 @@ sealed class Screen(
     object Search : Screen(
         route   = "search_screen",
         label   = "Search",
-        icon    = Icons.Default.Search,
-        enabled = true
+        icon    = Icons.Default.Search
     )
     object Builds : Screen(
         route = "builds_screen",
@@ -78,18 +78,15 @@ sealed class Screen(
     object Market : Screen(
         route   = "market_screen",
         label   = "Market",
-        icon    = Icons.Default.ShoppingCart,
-        enabled = true
+        icon    = Icons.Default.ShoppingCart
     )
     object Profile : Screen(
         route   = "profile_screen",
         label   = "Profile",
-        icon    = Icons.Default.Person,
-        enabled = false   // ← pantalla pendiente de implementar
+        icon    = Icons.Default.Person
     )
 }
 
-// ── Top-level tab list shown in the nav bar ───────────────────────────────
 private val navItems = listOf(
     Screen.Home,
     Screen.Search,
@@ -98,93 +95,114 @@ private val navItems = listOf(
     Screen.Profile
 )
 
-// ── Root composable ───────────────────────────────────────────────────────
-
 @Composable
 fun nPCsApp(
     componentViewModel: ComponentViewModel,
     buildViewModel: BuildViewModel,
+    authViewModel: AuthViewModel,
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    val showBottomBar = currentDestination?.route !in listOf("welcome_screen", "login_screen", "register_screen")
 
     Scaffold(
         bottomBar = {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentDestination = navBackStackEntry?.destination
-
-            NavigationBar(
-                containerColor     = SurfaceContainerHigh.copy(alpha = 0.92f),
-                contentColor       = OnSurfaceVariant,
-                tonalElevation     = 0.dp,
-                modifier           = Modifier.clip(
-                    RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-                )
-            ) {
-                navItems.forEach { screen ->
-                    val isSelected = currentDestination
-                        ?.hierarchy
-                        ?.any { it.route == screen.route } == true
-
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector     = screen.icon,
-                                contentDescription = screen.label,
-                                modifier        = Modifier.size(24.dp)
-                            )
-                        },
-                        label = {
-                            Text(
-                                text  = screen.label,
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        },
-                        selected = isSelected,
-                        enabled  = screen.enabled,
-                        onClick  = {
-                            if (screen.enabled) {
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState    = true
-                                }
-                            }
-                            // disabled tabs → do nothing (no-op)
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor       = NeonBlue,
-                            selectedTextColor       = NeonBlue,
-                            indicatorColor          = PrimaryContainer.copy(alpha = 0.20f),
-                            unselectedIconColor     = OnSurfaceVariant.copy(alpha = 0.55f),
-                            unselectedTextColor     = OnSurfaceVariant.copy(alpha = 0.55f),
-                            disabledIconColor       = OnSurfaceVariant.copy(alpha = 0.35f),
-                            disabledTextColor       = OnSurfaceVariant.copy(alpha = 0.35f),
-                        )
+            if (showBottomBar) {
+                NavigationBar(
+                    containerColor     = SurfaceContainerHigh.copy(alpha = 0.92f),
+                    contentColor       = OnSurfaceVariant,
+                    tonalElevation     = 0.dp,
+                    modifier           = Modifier.clip(
+                        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                     )
+                ) {
+                    navItems.forEach { screen ->
+                        val isSelected = currentDestination
+                            ?.hierarchy
+                            ?.any { it.route == screen.route } == true
+
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    imageVector     = screen.icon,
+                                    contentDescription = screen.label,
+                                    modifier        = Modifier.size(24.dp)
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text  = screen.label,
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            },
+                            selected = isSelected,
+                            enabled  = screen.enabled,
+                            onClick  = {
+                                if (screen.enabled) {
+                                    navController.navigate(screen.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState    = true
+                                    }
+                                }
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor       = NeonBlue,
+                                selectedTextColor       = NeonBlue,
+                                indicatorColor          = PrimaryContainer.copy(alpha = 0.20f),
+                                unselectedIconColor     = OnSurfaceVariant.copy(alpha = 0.55f),
+                                unselectedTextColor     = OnSurfaceVariant.copy(alpha = 0.55f),
+                                disabledIconColor       = OnSurfaceVariant.copy(alpha = 0.35f),
+                                disabledTextColor       = OnSurfaceVariant.copy(alpha = 0.35f),
+                            )
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
         NavHost(
             navController    = navController,
-            startDestination = "welcome_screen",
+            startDestination = if (authViewModel.currentUser != null) Screen.Home.route else "welcome_screen",
             modifier         = Modifier.padding(innerPadding)
         ) {
-            // Welcome Screen
             composable("welcome_screen") {
                 WelcomeScreen(
                     onStart = {
-                        navController.navigate("home_screen"){
-                            popUpTo("welcome_screen"){inclusive = true}
+                        navController.navigate("login_screen")
+                    }
+                )
+            }
+
+            composable("login_screen") {
+                LoginScreen(
+                    viewModel = authViewModel,
+                    onNavigateToRegister = { navController.navigate("register_screen") },
+                    onLoginSuccess = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo("login_screen") { inclusive = true }
                         }
                     }
                 )
             }
 
-            // Home
+            composable("register_screen") {
+                RegisterScreen(
+                    viewModel = authViewModel,
+                    onNavigateToLogin = { navController.popBackStack() },
+                    onRegisterSuccess = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo("register_screen") { inclusive = true }
+                        }
+                    }
+                )
+            }
+
             composable(Screen.Home.route) {
                 HomeScreen(
                     componentViewModel   = componentViewModel,
@@ -197,7 +215,6 @@ fun nPCsApp(
                 )
             }
 
-            // Builds
             composable(Screen.Builds.route) {
                 BuildsScreen(
                     componentViewModel  = componentViewModel,
@@ -208,7 +225,6 @@ fun nPCsApp(
                 )
             }
 
-            // ── Build Detail ─────────────────────────────────────────────
             composable(
                 "build_detail/{buildId}",
                 arguments = listOf(navArgument("buildId") { type = NavType.LongType })
@@ -229,7 +245,6 @@ fun nPCsApp(
                 )
             }
 
-            // Component Select
             composable(
                 "component_select/{componentType}",
                 arguments = listOf(navArgument("componentType") { type = NavType.StringType })
@@ -262,7 +277,6 @@ fun nPCsApp(
                 )
             }
 
-            // ── Market Screen ──────────────────────────────────────────
             composable(Screen.Market.route) {
                 MarketScreen(
                     onNavigateToSell = {
@@ -274,17 +288,14 @@ fun nPCsApp(
                 )
             }
 
-            // ── Sell Screen (Vender Componente) ────────────────────────
             composable("sell_screen") {
-                SellScreen()
+                SellScreen(
+                    onBack = { navController.popBackStack() }
+                )
             }
 
-            // ── Market Item Detail (Detalle del Producto) ──────────────
             composable("market_detail/{itemId}") { backStackEntry ->
                 val itemId = backStackEntry.arguments?.getString("itemId") ?: ""
-
-                // TODO:Aquí irá la pantalla de detalle del producto.
-                // Por ahora usamos un placeholder para que no falle la navegación:
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -293,7 +304,6 @@ fun nPCsApp(
                 }
             }
 
-            // ── Placeholder routes for future screens ────────────────────
             composable(Screen.Search.route) {
                 SearchScreen(
                     componentViewModel = componentViewModel,
@@ -302,7 +312,19 @@ fun nPCsApp(
                     }
                 )
             }
-            // composable(Screen.Profile.route) { ProfileScreen(...) }
+
+            composable(Screen.Profile.route) {
+                ProfileScreen(
+                    userName = authViewModel.currentUser?.displayName,
+                    userEmail = authViewModel.currentUser?.email,
+                    onLogout = {
+                        authViewModel.logout()
+                        navController.navigate("login_screen") {
+                            popUpTo(0)
+                        }
+                    }
+                )
+            }
         }
     }
 }

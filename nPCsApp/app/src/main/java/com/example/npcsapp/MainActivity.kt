@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.example.npcsapp.ui.navigation.nPCsApp
+import com.example.npcsapp.ui.screens.auth.AuthViewModel
 import com.example.npcsapp.ui.theme.NPCsAppTheme
 import com.example.npcsapp.viewmodel.BuildViewModel
 import com.example.npcsapp.viewmodel.BuildViewModelFactory
@@ -26,6 +29,19 @@ class MainActivity : ComponentActivity() {
         BuildViewModelFactory((application as nPCsApp).repository)
     }
 
+    private val authViewModel: AuthViewModel by viewModels {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
+                    val authRepository = (application as nPCsApp).authRepository
+                    return AuthViewModel(authRepository) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -35,6 +51,7 @@ class MainActivity : ComponentActivity() {
                     nPCsApp(
                         componentViewModel = componentViewModel,
                         buildViewModel = buildViewModel,
+                        authViewModel = authViewModel,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

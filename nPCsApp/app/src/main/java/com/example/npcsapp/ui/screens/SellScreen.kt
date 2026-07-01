@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,7 +18,9 @@ import com.example.npcsapp.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SellScreen() {
+fun SellScreen(
+    onBack: () -> Unit = {}
+) {
     var title by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -26,6 +29,15 @@ fun SellScreen() {
         topBar = {
             TopAppBar(
                 title = { Text("Vender Componente", fontWeight = FontWeight.Bold, color = NeonBlue) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = NeonBlue
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceDeep)
             )
         },

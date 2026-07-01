@@ -14,6 +14,10 @@ import com.example.npcsapp.data.local.entities.MotherboardEntity
 import com.example.npcsapp.data.local.entities.PSUEntity
 import com.example.npcsapp.data.local.entities.RAMEntity
 import com.example.npcsapp.data.local.entities.StorageEntity
+import com.example.npcsapp.data.local.entities.user.UserEntity
+import com.example.npcsapp.data.local.entities.user.ChatEntity
+import com.example.npcsapp.data.local.entities.user.MessageEntity
+import com.example.npcsapp.data.local.entities.user.ChatParticipantEntity
 
 @Database(
     entities = [
@@ -26,9 +30,13 @@ import com.example.npcsapp.data.local.entities.StorageEntity
         CaseEntity::class,
         CPUCoolerEntity::class,
         BuildEntity::class,
-        BuildComponentEntity::class
+        BuildComponentEntity::class,
+        UserEntity::class,
+        ChatEntity::class,
+        MessageEntity::class,
+        ChatParticipantEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,6 +50,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun CPUCoolerDao(): CPUCoolerDao
     abstract fun BuildDao(): BuildDao
     abstract fun BuildComponentDao(): BuildComponentDao
+    abstract fun UserDao(): UserDao
+    abstract fun ChatDao(): ChatDao
 
     companion object{
         @Volatile
