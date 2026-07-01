@@ -68,7 +68,7 @@ sealed class Screen(
         route   = "search_screen",
         label   = "Search",
         icon    = Icons.Default.Search,
-        enabled = true   // ← pantalla pendiente de implementar
+        enabled = true
     )
     object Builds : Screen(
         route = "builds_screen",
@@ -113,74 +113,72 @@ fun nPCsApp(
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
 
-            if (currentDestination?.route != "welcome_screen") {
+            NavigationBar(
+                containerColor     = SurfaceContainerHigh.copy(alpha = 0.92f),
+                contentColor       = OnSurfaceVariant,
+                tonalElevation     = 0.dp,
+                modifier           = Modifier.clip(
+                    RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                )
+            ) {
+                navItems.forEach { screen ->
+                    val isSelected = currentDestination
+                        ?.hierarchy
+                        ?.any { it.route == screen.route } == true
 
-                NavigationBar(
-                    containerColor = SurfaceContainerHigh.copy(alpha = 0.92f),
-                    contentColor = OnSurfaceVariant,
-                    tonalElevation = 0.dp,
-                    modifier = Modifier.clip(
-                        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-                    )
-                ) {
-                    navItems.forEach { screen ->
-                        val isSelected = currentDestination
-                            ?.hierarchy
-                            ?.any { it.route == screen.route } == true
-
-                        NavigationBarItem(
-                            icon = {
-                                Icon(
-                                    imageVector = screen.icon,
-                                    contentDescription = screen.label,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = screen.label,
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            },
-                            selected = isSelected,
-                            enabled = screen.enabled,
-                            onClick = {
-                                if (screen.enabled) {
-                                    navController.navigate(screen.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                                // disabled tabs → do nothing (no-op)
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = NeonBlue,
-                                selectedTextColor = NeonBlue,
-                                indicatorColor = PrimaryContainer.copy(alpha = 0.20f),
-                                unselectedIconColor = OnSurfaceVariant.copy(alpha = 0.55f),
-                                unselectedTextColor = OnSurfaceVariant.copy(alpha = 0.55f),
-                                disabledIconColor = OnSurfaceVariant.copy(alpha = 0.35f),
-                                disabledTextColor = OnSurfaceVariant.copy(alpha = 0.35f),
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                imageVector     = screen.icon,
+                                contentDescription = screen.label,
+                                modifier        = Modifier.size(24.dp)
                             )
+                        },
+                        label = {
+                            Text(
+                                text  = screen.label,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        },
+                        selected = isSelected,
+                        enabled  = screen.enabled,
+                        onClick  = {
+                            if (screen.enabled) {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState    = true
+                                }
+                            }
+                            // disabled tabs → do nothing (no-op)
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor       = NeonBlue,
+                            selectedTextColor       = NeonBlue,
+                            indicatorColor          = PrimaryContainer.copy(alpha = 0.20f),
+                            unselectedIconColor     = OnSurfaceVariant.copy(alpha = 0.55f),
+                            unselectedTextColor     = OnSurfaceVariant.copy(alpha = 0.55f),
+                            disabledIconColor       = OnSurfaceVariant.copy(alpha = 0.35f),
+                            disabledTextColor       = OnSurfaceVariant.copy(alpha = 0.35f),
                         )
-                    }
+                    )
                 }
             }
         }
     ) { innerPadding ->
         NavHost(
             navController    = navController,
-            startDestination = "welcome_screen",   // ← antes era Screen.Home.route
+            startDestination = "welcome_screen",
             modifier         = Modifier.padding(innerPadding)
         ) {
+            // ── Builds / Home ────────────────────────────────────────────
             composable("welcome_screen") {
                 WelcomeScreen(
                     onStart = {
-                        navController.navigate("home_screen") {
-                            popUpTo("welcome_screen") { inclusive = true }
+                        navController.navigate("home_screen"){
+                            popUpTo("welcome_screen"){inclusive = true}
                         }
                     }
                 )
@@ -208,6 +206,7 @@ fun nPCsApp(
                 )
             }
 
+
             // ── Build Detail ─────────────────────────────────────────────
             composable(
                 "build_detail/{buildId}",
@@ -228,6 +227,7 @@ fun nPCsApp(
                     }
                 )
             }
+
 
             // ── Component Select ─────────────────────────────────────────
             composable(
@@ -292,8 +292,7 @@ fun nPCsApp(
                 }
             }
 
-
-            // composable(Screen.Search.route)  { SearchScreen(...) }
+            // ── Placeholder routes for future screens ────────────────────
             composable(Screen.Search.route) {
                 SearchScreen(
                     gpuViewModel = gpuViewModel,

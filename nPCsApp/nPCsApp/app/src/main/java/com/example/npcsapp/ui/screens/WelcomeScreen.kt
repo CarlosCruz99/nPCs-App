@@ -90,7 +90,6 @@ fun WelcomeScreen(onStart: () -> Unit) {
 
             Button(
                 onClick = onStart,
-                onClick = onStart,
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = NeonBlue,
