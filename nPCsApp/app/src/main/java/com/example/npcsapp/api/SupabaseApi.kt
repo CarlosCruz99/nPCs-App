@@ -45,7 +45,7 @@ interface SupabaseApi {
         @Query("limit") limit: Int
     ): List<RAM>
 
-    @GET("rest/v1/storage")
+    @GET("rest/v1/internal_hard_drive")
     suspend fun getStorages(
         @Header("apikey") apiKey: String,
         @Header("Authorization") authorization: String,

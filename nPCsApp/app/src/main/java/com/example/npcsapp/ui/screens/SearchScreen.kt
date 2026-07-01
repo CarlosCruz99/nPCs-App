@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,8 +36,8 @@ fun SearchScreen(
     componentViewModel: ComponentViewModel,
     onNavigateToComponentDetail: (String, Int) -> Unit
 ) {
-    var query by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("GPUs") }
+    var query by rememberSaveable { mutableStateOf("") }
+    var selectedCategory by rememberSaveable { mutableStateOf("GPUs") }
     val categories = listOf("GPUs", "Procesadores", "RAM", "Tarjetas madre", "Almacenamiento", "PSU", "Gabinetes", "Ventiladores CPU")
 
     val gpus by componentViewModel.gpuList.collectAsState()
