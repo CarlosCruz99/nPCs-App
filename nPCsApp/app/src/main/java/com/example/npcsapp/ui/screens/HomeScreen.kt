@@ -39,18 +39,18 @@ import com.example.npcsapp.viewmodel.ComponentViewModel
 private data class CategoriaPieza(
     val etiqueta: String,
     val icono: ImageVector,
-    val disponible: Boolean = false
+    val categoriaBusqueda: String
 )
 
 private val categorias = listOf(
-    CategoriaPieza("Tarjeta Gráfica", Icons.Default.DeveloperBoard, disponible = true),
-    CategoriaPieza("Procesador",      Icons.Default.Memory),
-    CategoriaPieza("Placa Base",      Icons.Default.Dashboard),
-    CategoriaPieza("Memoria RAM",     Icons.Default.SdCard),
-    CategoriaPieza("Almacenamiento",  Icons.Default.Storage),
-    CategoriaPieza("Fuente",          Icons.Default.Bolt),
-    CategoriaPieza("Gabinete",        Icons.Default.Inventory2),
-    CategoriaPieza("Refrigeración",   Icons.Default.AcUnit),
+    CategoriaPieza("Tarjeta Gráfica", Icons.Default.DeveloperBoard, "GPUs"),
+    CategoriaPieza("Procesador",      Icons.Default.Memory,         "Procesadores"),
+    CategoriaPieza("Placa Base",      Icons.Default.Dashboard,      "Tarjetas madre"),
+    CategoriaPieza("Memoria RAM",     Icons.Default.SdCard,         "RAM"),
+    CategoriaPieza("Almacenamiento",  Icons.Default.Storage,        "Almacenamiento"),
+    CategoriaPieza("Fuente",          Icons.Default.Bolt,           "PSU"),
+    CategoriaPieza("Gabinete",        Icons.Default.Inventory2,     "Gabinetes"),
+    CategoriaPieza("Refrigeración",   Icons.Default.AcUnit,         "Ventiladores CPU"),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,7 +60,8 @@ fun HomeScreen(
     buildViewModel: BuildViewModel,
     onStartBuild: () -> Unit,
     onOpenBuild: (Long) -> Unit,
-    onOpenGpu: (Int) -> Unit,
+    onOpenComponent: (String, Int) -> Unit,
+    onNavigateToSearch: (String) -> Unit,
     onOpenMarket: () -> Unit,
     onSeeAllBuilds: () -> Unit,
 ) {
@@ -124,7 +125,7 @@ fun HomeScreen(
                                 CategoryTile(
                                     categoria = cat,
                                     modifier = Modifier.weight(1f),
-                                    onClick = { if (cat.disponible) onStartBuild() }
+                                    onClick = { onNavigateToSearch(cat.categoriaBusqueda) }
                                 )
                             }
                         }
@@ -188,7 +189,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(gpus.take(10), key = { it.id }) { gpu ->
-                            GpuFeaturedCard(gpu) { onOpenGpu(gpu.id) }
+                            GpuFeaturedCard(gpu) { onOpenComponent("GPU", gpu.id) }
                         }
                     }
                 }
@@ -325,17 +326,12 @@ private fun SectionHeader(titulo: String, accion: String? = null, onAccion: () -
 
 @Composable
 private fun CategoryTile(categoria: CategoriaPieza, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val activo = categoria.disponible
     Box(
         modifier = modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(16.dp))
-            .background(if (activo) PrimaryContainer.copy(alpha = 0.14f) else GlassBg.copy(alpha = 0.55f))
-            .border(
-                1.dp,
-                if (activo) NeonBlue.copy(alpha = 0.40f) else Color.White.copy(alpha = 0.06f),
-                RoundedCornerShape(16.dp)
-            )
+            .background(PrimaryContainer.copy(alpha = 0.14f))
+            .border(1.dp, NeonBlue.copy(alpha = 0.40f), RoundedCornerShape(16.dp))
             .clickable { onClick() }
             .padding(8.dp),
         contentAlignment = Alignment.Center
@@ -344,23 +340,19 @@ private fun CategoryTile(categoria: CategoriaPieza, modifier: Modifier = Modifie
             Icon(
                 categoria.icono,
                 null,
-                tint = if (activo) NeonBlue else OnSurfaceVariant.copy(alpha = 0.5f),
+                tint = NeonBlue,
                 modifier = Modifier.size(26.dp)
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 categoria.etiqueta,
-                color = if (activo) Color.White else OnSurfaceVariant.copy(alpha = 0.55f),
+                color = Color.White,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 lineHeight = 11.sp
             )
-            if (!activo) {
-                Spacer(Modifier.height(3.dp))
-                Text("Pronto", color = TertiaryAccent.copy(alpha = 0.8f), fontSize = 8.sp, fontWeight = FontWeight.Bold)
-            }
         }
     }
 }

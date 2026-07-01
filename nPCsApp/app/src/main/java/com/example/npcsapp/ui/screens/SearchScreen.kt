@@ -34,10 +34,11 @@ import com.example.npcsapp.viewmodel.ComponentViewModel
 @Composable
 fun SearchScreen(
     componentViewModel: ComponentViewModel,
+    initialCategory: String = "GPUs",
     onNavigateToComponentDetail: (String, Int) -> Unit
 ) {
     var query by rememberSaveable { mutableStateOf("") }
-    var selectedCategory by rememberSaveable { mutableStateOf("GPUs") }
+    var selectedCategory by rememberSaveable { mutableStateOf(initialCategory) }
     val categories = listOf("GPUs", "Procesadores", "RAM", "Tarjetas madre", "Almacenamiento", "PSU", "Gabinetes", "Ventiladores CPU")
 
     val gpus by componentViewModel.gpuList.collectAsState()

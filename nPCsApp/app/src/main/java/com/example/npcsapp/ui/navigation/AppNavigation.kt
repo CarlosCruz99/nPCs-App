@@ -226,12 +226,13 @@ fun nPCsApp(
 
             composable(Screen.Home.route) {
                 HomeScreen(
-                    componentViewModel   = componentViewModel,
+                    componentViewModel = componentViewModel,
                     buildViewModel = buildViewModel,
-                    onStartBuild   = { navController.navigate("builds_screen") },
-                    onOpenBuild    = { id -> navController.navigate("build_detail/$id") },
-                    onOpenGpu      = { gpuId -> navController.navigate("gpu_detail/$gpuId") },
-                    onOpenMarket   = { navController.navigate("market_screen") },
+                    onStartBuild = { navController.navigate("builds_screen") },
+                    onOpenBuild = { id -> navController.navigate("build_detail/$id") },
+                    onOpenComponent = { type, id -> navController.navigate("component_detail/$type/$id") },
+                    onNavigateToSearch = { category -> navController.navigate("search_screen?category=$category") },
+                    onOpenMarket = { navController.navigate("market_screen") },
                     onSeeAllBuilds = { navController.navigate("builds_screen") }
                 )
             }
@@ -373,9 +374,26 @@ fun nPCsApp(
                 )
             }
 
-            composable(Screen.Search.route) {
+//            composable(Screen.Search.route) {
+//                SearchScreen(
+//                    componentViewModel = componentViewModel,
+//                    onNavigateToComponentDetail = { type, id ->
+//                        navController.navigate("component_detail/$type/$id")
+//                    }
+//                )
+//            }
+
+            composable(
+                "search_screen?category={category}",
+                arguments = listOf(navArgument("category") {
+                    type = NavType.StringType
+                    defaultValue = "GPUs"
+                })
+            ) { backStackEntry ->
+                val category = backStackEntry.arguments?.getString("category") ?: "GPUs"
                 SearchScreen(
                     componentViewModel = componentViewModel,
+                    initialCategory = category,
                     onNavigateToComponentDetail = { type, id ->
                         navController.navigate("component_detail/$type/$id")
                     }
