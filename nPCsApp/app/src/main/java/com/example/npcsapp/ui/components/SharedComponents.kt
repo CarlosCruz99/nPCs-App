@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -24,6 +25,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.npcsapp.ui.theme.NeonBlue
@@ -36,11 +39,6 @@ import com.example.npcsapp.ui.theme.SurfaceContainerHigh
 // FAB unificado  — idéntico en todas las pantallas
 // ─────────────────────────────────────────────────────────────────────────
 
-/**
- * Botón de acción flotante estándar de nPCs.
- * Usa NeonBlue como color de fondo en todas las pantallas.
- * [label] opcional: si se provee se muestra junto al ícono (+).
- */
 @Composable
 fun nPCsFab(
     onClick: () -> Unit,
@@ -48,31 +46,6 @@ fun nPCsFab(
     modifier: Modifier = Modifier
 ) {
     if (label != null) {
-        // FAB extendido
-        Box(
-            modifier = modifier
-                .clip(RoundedCornerShape(16.dp))
-                .background(NeonBlue)
-                .border(1.dp, NeonBlue.copy(alpha = 0.40f), RoundedCornerShape(16.dp))
-                .clickable { onClick() }
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .also { } // necesario para que Row sea el contenido del Box
-            ) {
-                // El contenido va dentro, pero Box no es un RowScope, usamos Box aparte
-            }
-            // Re-hacemos con Row directamente dentro del Box via padding
-            androidx.compose.foundation.layout.Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .also { }
-            ) { }
-        }
-        // Implementación real como Button estilizado
         Button(
             onClick       = onClick,
             shape         = RoundedCornerShape(16.dp),
@@ -80,7 +53,7 @@ fun nPCsFab(
                 containerColor = NeonBlue,
                 contentColor   = OnPrimary
             ),
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
             modifier       = modifier
         ) {
             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp), tint = OnPrimary)
@@ -94,7 +67,6 @@ fun nPCsFab(
             )
         }
     } else {
-        // FAB circular
         Box(
             modifier = modifier
                 .size(56.dp)
@@ -135,10 +107,18 @@ fun PrimaryButton(
             disabledContainerColor = SurfaceContainerHigh,
             disabledContentColor   = OnSurfaceVariant
         ),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-        modifier       = modifier
+        // Reducimos vertical padding ligeramente para evitar cortes en alturas forzadas
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+        modifier       = modifier.defaultMinSize(minHeight = 40.dp)
     ) {
-        Text(text, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+        Text(
+            text = text, 
+            fontWeight = FontWeight.Bold, 
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -160,10 +140,17 @@ fun SecondaryButton(
             contentColor   = OnSurfaceVariant
         ),
         border         = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-        modifier       = modifier
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+        modifier       = modifier.defaultMinSize(minHeight = 40.dp)
     ) {
-        Text(text, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+        Text(
+            text = text, 
+            fontWeight = FontWeight.Medium, 
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -171,24 +158,12 @@ fun SecondaryButton(
 // Formato de precio unificado
 // ─────────────────────────────────────────────────────────────────────────
 
-/**
- * Formatea un Float como precio en USD con dos decimales.
- * Ejemplo: 550f → "$550.00"
- */
 fun Float.toPrecio(): String = "${"$"}${"%.2f".format(this)}"
 
-/**
- * Versión sin centavos para precios enteros grandes (ej. cards de comunidad).
- * Ejemplo: 2450f → "$2,450"
- */
 fun Float.toPrecioCorto(): String {
     val entero = this.toInt()
     return "${"$"}${"%,d".format(entero)}"
 }
-
-// ─────────────────────────────────────────────────────────────────────────
-// Texto de precio estilizado (reutilizable inline)
-// ─────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun PrecioTexto(

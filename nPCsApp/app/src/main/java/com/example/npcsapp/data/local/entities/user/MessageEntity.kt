@@ -9,9 +9,9 @@ import androidx.room.PrimaryKey
     indices = [Index("chatId"), Index("senderId")]
 )
 data class MessageEntity(
-    @PrimaryKey val messageId: String,
-    val chatId: String,
-    val senderId: String,
-    val content: String,
+    @PrimaryKey val messageId: String = "",
+    val chatId: String = "",
+    val senderId: String = "",
+    val content: String = "",
     val timestamp: Long = System.currentTimeMillis()
 )

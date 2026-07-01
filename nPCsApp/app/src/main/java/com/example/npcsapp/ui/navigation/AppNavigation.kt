@@ -19,7 +19,10 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +43,9 @@ import com.example.npcsapp.ui.screens.ComponentSelectScreen
 import com.example.npcsapp.ui.screens.ComponentDetailScreen
 import com.example.npcsapp.ui.screens.HomeScreen
 import com.example.npcsapp.ui.screens.MarketScreen
+import com.example.npcsapp.ui.screens.MarketDetailScreen
+import com.example.npcsapp.ui.screens.ChatListScreen
+import com.example.npcsapp.ui.screens.ChatScreen
 import com.example.npcsapp.ui.screens.ProfileScreen
 import com.example.npcsapp.ui.screens.SearchScreen
 import com.example.npcsapp.ui.screens.SellScreen
@@ -53,6 +59,9 @@ import com.example.npcsapp.ui.theme.PrimaryContainer
 import com.example.npcsapp.ui.theme.SurfaceContainerHigh
 import com.example.npcsapp.viewmodel.BuildViewModel
 import com.example.npcsapp.viewmodel.ComponentViewModel
+import com.example.npcsapp.viewmodel.MarketViewModel
+import com.example.npcsapp.viewmodel.ChatViewModel
+import kotlinx.coroutines.launch
 
 sealed class Screen(
     val route: String,
@@ -100,11 +109,23 @@ fun nPCsApp(
     componentViewModel: ComponentViewModel,
     buildViewModel: BuildViewModel,
     authViewModel: AuthViewModel,
+    marketViewModel: MarketViewModel,
+    chatViewModel: ChatViewModel,
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val scope = rememberCoroutineScope()
+    
+    val currentUser by authViewModel.user.collectAsState()
+
+    // Inicializar ChatViewModel con el ID del usuario actual
+    LaunchedEffect(currentUser) {
+        currentUser?.let {
+            chatViewModel.initViewModel(it.uid)
+        }
+    }
 
     val showBottomBar = currentDestination?.route !in listOf("welcome_screen", "login_screen", "register_screen")
 
@@ -168,7 +189,7 @@ fun nPCsApp(
     ) { innerPadding ->
         NavHost(
             navController    = navController,
-            startDestination = if (authViewModel.currentUser != null) Screen.Home.route else "welcome_screen",
+            startDestination = if (currentUser != null) Screen.Home.route else "welcome_screen",
             modifier         = Modifier.padding(innerPadding)
         ) {
             composable("welcome_screen") {
@@ -279,29 +300,77 @@ fun nPCsApp(
 
             composable(Screen.Market.route) {
                 MarketScreen(
+                    viewModel = marketViewModel,
                     onNavigateToSell = {
                         navController.navigate("sell_screen")
                     },
                     onNavigateToDetail = { itemId ->
                         navController.navigate("market_detail/$itemId")
+                    },
+                    onNavigateToChatList = {
+                        navController.navigate("chat_list")
+                    },
+                    onStartChat = { otherId: String, otherName: String ->
+                        scope.launch {
+                            val myId = currentUser?.uid ?: ""
+                            val myName = currentUser?.displayName ?: "Usuario"
+                            val chatId = chatViewModel.startChatWith(myId, myName, otherId, otherName)
+                            navController.navigate("chat_screen/$chatId")
+                        }
                     }
                 )
             }
 
             composable("sell_screen") {
                 SellScreen(
+                    marketViewModel = marketViewModel,
+                    authViewModel = authViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }
 
-            composable("market_detail/{itemId}") { backStackEntry ->
-                val itemId = backStackEntry.arguments?.getString("itemId") ?: ""
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Detalle del producto en construcción. ID: $itemId", color = Color.White)
-                }
+            composable(
+                "market_detail/{itemId}",
+                arguments = listOf(navArgument("itemId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val itemId = backStackEntry.arguments?.getLong("itemId") ?: 0L
+                MarketDetailScreen(
+                    itemId = itemId,
+                    marketViewModel = marketViewModel,
+                    onBack = { navController.popBackStack() },
+                    onStartChat = { otherId: String, otherName: String ->
+                        scope.launch {
+                            val myId = currentUser?.uid ?: ""
+                            val myName = currentUser?.displayName ?: "Usuario"
+                            val chatId = chatViewModel.startChatWith(myId, myName, otherId, otherName)
+                            navController.navigate("chat_screen/$chatId")
+                        }
+                    }
+                )
+            }
+
+            composable("chat_list") {
+                ChatListScreen(
+                    viewModel = chatViewModel,
+                    onNavigateToChat = { chatId ->
+                        navController.navigate("chat_screen/$chatId")
+                    },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                "chat_screen/{chatId}",
+                arguments = listOf(navArgument("chatId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val chatId = backStackEntry.arguments?.getString("chatId") ?: ""
+                val myId = currentUser?.uid ?: ""
+                ChatScreen(
+                    chatId = chatId,
+                    myUserId = myId,
+                    viewModel = chatViewModel,
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             composable(Screen.Search.route) {
@@ -315,13 +384,16 @@ fun nPCsApp(
 
             composable(Screen.Profile.route) {
                 ProfileScreen(
-                    userName = authViewModel.currentUser?.displayName,
-                    userEmail = authViewModel.currentUser?.email,
+                    userName = currentUser?.displayName,
+                    userEmail = currentUser?.email,
                     onLogout = {
                         authViewModel.logout()
                         navController.navigate("login_screen") {
                             popUpTo(0)
                         }
+                    },
+                    onNavigateToMessages = {
+                        navController.navigate("chat_list")
                     }
                 )
             }

@@ -21,10 +21,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
+import com.example.npcsapp.ui.components.PrimaryButton
 import com.example.npcsapp.ui.components.displayInfoOf
 import com.example.npcsapp.ui.components.specsFor
 import com.example.npcsapp.ui.components.subtitleFor
@@ -32,16 +35,6 @@ import com.example.npcsapp.ui.components.toPrecio
 import com.example.npcsapp.ui.theme.*
 import com.example.npcsapp.viewmodel.BuildViewModel
 import com.example.npcsapp.viewmodel.ComponentViewModel
-
-// Etiquetas en español de cada especificación técnica
-private val ETIQUETAS_ESPEC = mapOf(
-    "Chipset"        to "Chipset",
-    "Memoria"        to "Memoria (GB)",
-    "Frecuencia base" to "Frecuencia base (MHz)",
-    "Frecuencia boost" to "Frecuencia boost (MHz)",
-    "Color"          to "Color",
-    "Longitud"       to "Longitud (mm)",
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +74,7 @@ fun ComponentDetailScreen(
                 title = {
                     Text(
                         entity?.let { displayInfoOf(componentType, it).name } ?: componentType,
-                        color = NeonBlue, fontWeight = FontWeight.Bold, fontSize = 18.sp, maxLines = 1
+                        color = NeonBlue, fontWeight = FontWeight.Bold, fontSize = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis
                     )
                 },
                 navigationIcon = {
@@ -188,7 +181,7 @@ fun ComponentDetailScreen(
                     }
                 }
 
-                Spacer(Modifier.height(28.dp))
+                Spacer(Modifier.height(32.dp))
 
                 // Botón Amazon
                 if (!display.amazonLink.isNullOrBlank()) {
@@ -196,45 +189,50 @@ fun ComponentDetailScreen(
                         onClick = {
                             contexto.startActivity(Intent(Intent.ACTION_VIEW, display.amazonLink.toUri()))
                         },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
                         shape    = RoundedCornerShape(12.dp),
                         colors   = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9900))
                     ) {
-                        Text("Comprar en Amazon", color = Color.Black, fontWeight = FontWeight.Bold)
+                        Text("Comprar en Amazon", color = Color.Black, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
                 }
 
                 // Botón agregar al build
-                Button(
-                    onClick  = { buildViewModel.addComponentToBuild(componentType, entity) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape    = RoundedCornerShape(12.dp),
-                    colors   = ButtonDefaults.buttonColors(containerColor = NeonBlue)
-                ) {
-                    Text("Agregar al build", color = OnPrimary, fontWeight = FontWeight.Bold)
-                }
+                PrimaryButton(
+                    text = "Agregar al build",
+                    onClick = { buildViewModel.addComponentToBuild(componentType, entity) },
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                )
+                
+                Spacer(Modifier.height(32.dp))
             }
         }
     }
 }
-
-// Fila de especificación
 
 @Composable
 private fun FilaEspec(etiqueta: String, valor: String) {
     Row(
         modifier              = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 13.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment     = Alignment.CenterVertically
+        verticalAlignment     = Alignment.Top
     ) {
-        Text(etiqueta, color = OnSurfaceVariant, fontSize = 13.sp)
         Text(
-            valor,
+            text = etiqueta, 
+            color = OnSurfaceVariant, 
+            fontSize = 13.sp,
+            modifier = Modifier.weight(1f)
+        )
+        Spacer(Modifier.width(12.dp))
+        Text(
+            text = valor,
             color      = Color.White,
             fontSize   = 13.sp,
             fontWeight = FontWeight.SemiBold,
-            fontFamily = FontFamily.Monospace
+            fontFamily = FontFamily.Monospace,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1.2f)
         )
     }
 }

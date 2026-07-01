@@ -21,49 +21,42 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.npcsapp.data.local.entities.MarketItemEntity
 import com.example.npcsapp.ui.components.PrimaryButton
 import com.example.npcsapp.ui.components.SecondaryButton
 import com.example.npcsapp.ui.components.nPCsFab
 import com.example.npcsapp.ui.components.toPrecio
 import com.example.npcsapp.ui.theme.*
-
-data class MarketItem(
-    val id: String,
-    val titulo: String,
-    val precio: Float,
-    val ubicacion: String,
-    val vendedor: String,
-    val estadoTexto: String,
-    val estadoColor: Color,
-    val imagenUrl: String
-)
+import com.example.npcsapp.viewmodel.MarketViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarketScreen(
+    viewModel: MarketViewModel,
     onNavigateToSell: () -> Unit = {},
-    onNavigateToDetail: (String) -> Unit = {}
+    onNavigateToDetail: (String) -> Unit = {},
+    onNavigateToChatList: () -> Unit = {},
+    onStartChat: (String, String) -> Unit = { _, _ -> }
 ) {
     var busqueda by remember { mutableStateOf("") }
-
-    val articulos = listOf(
-        MarketItem("1", "EVGA RTX 3080 FTW3 Ultra",  550f,  "San Salvador, Escalón",  "Roberto M.",   "Usado - Excelente", StatusUsed,  "https://m.media-amazon.com/images/I/81sXFTXt5CS._AC_SX466_.jpg"),
-        MarketItem("2", "AMD Ryzen 9 5900X",           285f,  "Santa Ana, Centro",       "HardwareSV",   "Caja abierta",      StatusNew,   "https://m.media-amazon.com/images/I/71klxIIJP5L._AC_SL1500_.jpg"),
-        MarketItem("3", "32 GB Trident Z Neo 3600",   110f,  "San Miguel",              "Techie99",     "Usado - Bueno",     StatusUsed,  "https://m.media-amazon.com/images/I/61l4EStxhnL._AC_SL1274_.jpg"),
-        MarketItem("4", "Corsair RM1000x 1000 W",      95f,  "La Libertad",             "GamerGuy_SV",  "Usado - Regular",   StatusOffer, "https://m.media-amazon.com/images/I/71Xai-xG7wL._AC_SX466_.jpg")
-    )
+    val marketItems by viewModel.marketItems.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title  = { Text("Marketplace", color = NeonBlue, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                actions = {
+                    IconButton(onClick = onNavigateToChatList) {
+                        Icon(Icons.Default.ChatBubbleOutline, "Mensajes", tint = NeonBlue)
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceContainerHigh.copy(alpha = 0.88f))
             )
         },
-        // ── FAB unificado (mismo estilo que BuildsScreen) ─────────────────
         floatingActionButton = {
             nPCsFab(onClick = onNavigateToSell, label = "Publicar artículo")
         },
@@ -76,7 +69,6 @@ fun MarketScreen(
             verticalArrangement   = Arrangement.spacedBy(16.dp),
             modifier              = Modifier.padding(padding)
         ) {
-            // ── Encabezado y barra de búsqueda ────────────────────────────
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Column(modifier = Modifier.padding(bottom = 8.dp)) {
                     Text(
@@ -104,7 +96,6 @@ fun MarketScreen(
                         )
                     )
                     Spacer(Modifier.height(16.dp))
-                    // Chips de filtro
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         item { FilterChip("Filtros",               Icons.Default.Tune,        seleccionado = true) }
                         item { FilterChip("Condición: cualquiera", seleccionado = false) }
@@ -114,14 +105,24 @@ fun MarketScreen(
                 }
             }
 
-            // ── Cuadrícula de artículos ───────────────────────────────────
-            items(articulos.filter {
-                busqueda.isBlank() || it.titulo.contains(busqueda, ignoreCase = true)
-            }) { item ->
-                ItemCard(item = item, onClick = { onNavigateToDetail(item.id) })
+            if (marketItems.isEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), contentAlignment = Alignment.Center) {
+                        Text("No hay artículos publicados aún.", color = OnSurfaceVariant)
+                    }
+                }
+            } else {
+                items(marketItems.filter {
+                    busqueda.isBlank() || it.title.contains(busqueda, ignoreCase = true)
+                }) { item ->
+                    ItemCard(
+                        item = item, 
+                        onClick = { onNavigateToDetail(item.id.toString()) },
+                        onChatClick = { onStartChat(item.sellerId, item.sellerName) }
+                    )
+                }
             }
 
-            // ── Cargar más ────────────────────────────────────────────────
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Box(modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
                     SecondaryButton("Ver más resultados", onClick = { /* TODO */ })
@@ -130,8 +131,6 @@ fun MarketScreen(
         }
     }
 }
-
-// ── Chip de filtro ────────────────────────────────────────────────────────
 
 @Composable
 private fun FilterChip(
@@ -158,35 +157,46 @@ private fun FilterChip(
     }
 }
 
-// ── Tarjeta de artículo ───────────────────────────────────────────────────
-
 @Composable
-private fun ItemCard(item: MarketItem, onClick: () -> Unit) {
+private fun ItemCard(
+    item: MarketItemEntity, 
+    onClick: () -> Unit,
+    onChatClick: () -> Unit
+) {
+    val conditionColor = when(item.condition.uppercase()) {
+        "NUEVO" -> StatusNew
+        "OFERTA" -> StatusOffer
+        else -> StatusUsed
+    }
+
     Card(
         onClick   = onClick,
-        modifier  = Modifier.fillMaxWidth().height(420.dp),
+        modifier  = Modifier.fillMaxWidth().height(440.dp),
         shape     = RoundedCornerShape(16.dp),
         colors    = CardDefaults.cardColors(containerColor = SurfaceCard.copy(alpha = 0.8f)),
         border    = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-
-            // ── Imagen y badges ───────────────────────────────────────────
             Box(modifier = Modifier.fillMaxWidth().weight(1f).background(Color.Black.copy(alpha = 0.3f))) {
-                AsyncImage(item.imagenUrl, item.titulo, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                if (item.imageUrl != null) {
+                    AsyncImage(item.imageUrl, item.title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                } else {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Image, "Sin imagen", tint = OnSurfaceVariant.copy(alpha = 0.2f), modifier = Modifier.size(64.dp))
+                    }
+                }
 
-                // Badge de estado (Usado / Nuevo / Oferta)
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(12.dp)
-                        .background(item.estadoColor.copy(alpha = 0.20f), RoundedCornerShape(50))
-                        .border(1.dp, item.estadoColor.copy(alpha = 0.30f), RoundedCornerShape(50))
+                        .background(conditionColor.copy(alpha = 0.20f), RoundedCornerShape(50))
+                        .border(1.dp, conditionColor.copy(alpha = 0.30f), RoundedCornerShape(50))
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        item.estadoTexto.uppercase(),
-                        color         = item.estadoColor,
+                        item.condition.uppercase(),
+                        color         = conditionColor,
                         fontSize      = 10.sp,
                         fontWeight    = FontWeight.Bold,
                         letterSpacing = 1.sp,
@@ -194,7 +204,6 @@ private fun ItemCard(item: MarketItem, onClick: () -> Unit) {
                     )
                 }
 
-                // Botón favorito
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -208,21 +217,20 @@ private fun ItemCard(item: MarketItem, onClick: () -> Unit) {
                 }
             }
 
-            // ── Detalles ──────────────────────────────────────────────────
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
                     Text(
-                        item.titulo,
+                        item.title,
                         style      = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color      = OnSurface,
                         modifier   = Modifier.weight(1f),
-                        maxLines   = 2
+                        maxLines   = 2,
+                        overflow   = TextOverflow.Ellipsis
                     )
                     Spacer(Modifier.width(8.dp))
-                    // Precio formateado con formato unificado
                     Text(
-                        item.precio.toPrecio(),
+                        item.price.toPrecio(),
                         color      = NeonBlue,
                         fontSize   = 20.sp,
                         fontWeight = FontWeight.Bold,
@@ -232,18 +240,16 @@ private fun ItemCard(item: MarketItem, onClick: () -> Unit) {
 
                 Spacer(Modifier.height(8.dp))
 
-                // Ubicación
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.LocationOn, null, tint = OnSurfaceVariant, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text(item.ubicacion, color = OnSurfaceVariant, fontSize = 13.sp)
+                    Text(item.location, color = OnSurfaceVariant, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
 
                 Spacer(Modifier.height(16.dp))
 
-                // Vendedor y acciones
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
@@ -254,21 +260,20 @@ private fun ItemCard(item: MarketItem, onClick: () -> Unit) {
                             Icon(Icons.Default.Person, null, tint = NeonBlue, modifier = Modifier.size(18.dp))
                         }
                         Spacer(Modifier.width(8.dp))
-                        Text(item.vendedor, color = OnSurfaceVariant, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                        Text(item.sellerName, color = OnSurfaceVariant, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
+                    Spacer(Modifier.width(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        // Botón de chat — mismo borde que en BuildDetailScreen
                         IconButton(
-                            onClick  = { /* chat — pendiente */ },
-                            modifier = Modifier.size(36.dp).border(1.dp, OutlineVariant, RoundedCornerShape(8.dp))
+                            onClick  = onChatClick,
+                            modifier = Modifier.size(40.dp).border(1.dp, OutlineVariant, RoundedCornerShape(8.dp))
                         ) {
                             Icon(Icons.Default.ChatBubbleOutline, "Mensaje", tint = OnSurfaceVariant, modifier = Modifier.size(18.dp))
                         }
-                        // Botón primario unificado
                         PrimaryButton(
                             text     = "Ver detalle",
                             onClick  = onClick,
-                            modifier = Modifier.height(36.dp)
+                            modifier = Modifier.height(40.dp)
                         )
                     }
                 }

@@ -4,12 +4,14 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.npcsapp.data.local.entities.BuildComponentEntity
 import com.example.npcsapp.data.local.entities.BuildEntity
 import com.example.npcsapp.data.local.entities.CPUCoolerEntity
 import com.example.npcsapp.data.local.entities.CPUEntity
 import com.example.npcsapp.data.local.entities.CaseEntity
 import com.example.npcsapp.data.local.entities.GPUEntity
+import com.example.npcsapp.data.local.entities.MarketItemEntity
 import com.example.npcsapp.data.local.entities.MotherboardEntity
 import com.example.npcsapp.data.local.entities.PSUEntity
 import com.example.npcsapp.data.local.entities.RAMEntity
@@ -34,11 +36,13 @@ import com.example.npcsapp.data.local.entities.user.ChatParticipantEntity
         UserEntity::class,
         ChatEntity::class,
         MessageEntity::class,
-        ChatParticipantEntity::class
+        ChatParticipantEntity::class,
+        MarketItemEntity::class
     ],
-    version = 8,
+    version = 10,
     exportSchema = false
 )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun GPUDao(): GPUDao
     abstract fun CPUDao(): CPUDao
@@ -52,6 +56,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun BuildComponentDao(): BuildComponentDao
     abstract fun UserDao(): UserDao
     abstract fun ChatDao(): ChatDao
+    abstract fun MarketItemDao(): MarketItemDao
 
     companion object{
         @Volatile

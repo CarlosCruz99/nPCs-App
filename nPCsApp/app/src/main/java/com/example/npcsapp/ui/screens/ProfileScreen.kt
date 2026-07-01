@@ -6,8 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -27,7 +28,8 @@ import com.example.npcsapp.ui.theme.*
 fun ProfileScreen(
     userName: String?,
     userEmail: String?,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onNavigateToMessages: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -75,6 +77,27 @@ fun ProfileScreen(
                     InfoRow(icon = Icons.Default.Person, label = "Nombre", value = userName ?: "Usuario")
                     HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = OutlineVariant.copy(alpha = 0.5f))
                     InfoRow(icon = Icons.Default.Email, label = "Email", value = userEmail ?: "Sin email")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Messages Button Card
+            Card(
+                onClick = onNavigateToMessages,
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = SurfaceCard.copy(alpha = 0.8f)),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.05f)),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.ChatBubbleOutline, null, tint = NeonCyan)
+                    Spacer(Modifier.width(12.dp))
+                    Text("Mis Mensajes", color = OnSurface, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = OnSurfaceVariant)
                 }
             }
 

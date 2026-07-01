@@ -16,8 +16,12 @@ import com.example.npcsapp.ui.screens.auth.AuthViewModel
 import com.example.npcsapp.ui.theme.NPCsAppTheme
 import com.example.npcsapp.viewmodel.BuildViewModel
 import com.example.npcsapp.viewmodel.BuildViewModelFactory
+import com.example.npcsapp.viewmodel.ChatViewModel
+import com.example.npcsapp.viewmodel.ChatViewModelFactory
 import com.example.npcsapp.viewmodel.ComponentViewModel
 import com.example.npcsapp.viewmodel.ComponentViewModelFactory
+import com.example.npcsapp.viewmodel.MarketViewModel
+import com.example.npcsapp.viewmodel.MarketViewModelFactory
 import kotlin.getValue
 
 class MainActivity : ComponentActivity() {
@@ -27,6 +31,14 @@ class MainActivity : ComponentActivity() {
 
     private val buildViewModel: BuildViewModel by viewModels {
         BuildViewModelFactory((application as nPCsApp).repository)
+    }
+
+    private val marketViewModel: MarketViewModel by viewModels {
+        MarketViewModelFactory((application as nPCsApp).marketRepository)
+    }
+
+    private val chatViewModel: ChatViewModel by viewModels {
+        ChatViewModelFactory((application as nPCsApp).chatRepository)
     }
 
     private val authViewModel: AuthViewModel by viewModels {
@@ -52,6 +64,8 @@ class MainActivity : ComponentActivity() {
                         componentViewModel = componentViewModel,
                         buildViewModel = buildViewModel,
                         authViewModel = authViewModel,
+                        marketViewModel = marketViewModel,
+                        chatViewModel = chatViewModel,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

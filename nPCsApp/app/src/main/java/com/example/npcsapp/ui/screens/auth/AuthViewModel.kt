@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.npcsapp.data.auth.AuthRepository
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 sealed class AuthUiState {
@@ -22,6 +24,13 @@ class AuthViewModel(
 
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
+
+    val user: StateFlow<FirebaseUser?> = repository.authStateFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = repository.currentUser
+        )
 
     val currentUser: FirebaseUser?
         get() = repository.currentUser

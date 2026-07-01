@@ -4,7 +4,9 @@ import android.app.Application
 import com.example.npcsapp.data.auth.AuthRepository
 import com.example.npcsapp.data.auth.FirebaseAuthRepository
 import com.example.npcsapp.data.local.AppDatabase
+import com.example.npcsapp.data.repository.ChatRepository
 import com.example.npcsapp.data.repository.ComponentRepository
+import com.example.npcsapp.data.repository.MarketRepository
 
 class nPCsApp: Application() {
     val database by lazy { AppDatabase.getDatabase(this) }
@@ -22,6 +24,14 @@ class nPCsApp: Application() {
             cpuCoolerDao = database.CPUCoolerDao(),
             buildComponentDao = database.BuildComponentDao()
         )
+    }
+
+    val marketRepository by lazy {
+        MarketRepository(database.MarketItemDao())
+    }
+
+    val chatRepository by lazy {
+        ChatRepository(database.ChatDao(), database.UserDao())
     }
 
     val authRepository: AuthRepository by lazy {
