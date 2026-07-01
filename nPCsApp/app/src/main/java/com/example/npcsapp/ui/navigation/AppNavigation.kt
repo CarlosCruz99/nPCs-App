@@ -39,6 +39,7 @@ import com.example.npcsapp.ui.screens.BuildsScreen
 import com.example.npcsapp.ui.screens.ComponentSelectScreen
 import com.example.npcsapp.ui.screens.GPUDetailScreen
 import com.example.npcsapp.ui.screens.MarketScreen
+import com.example.npcsapp.ui.screens.SearchScreen
 import com.example.npcsapp.ui.screens.SellScreen
 import com.example.npcsapp.ui.theme.NeonBlue
 import com.example.npcsapp.ui.theme.OnSurfaceVariant
@@ -65,7 +66,7 @@ sealed class Screen(
         route   = "search_screen",
         label   = "Search",
         icon    = Icons.Default.Search,
-        enabled = false   // ← pantalla pendiente de implementar
+        enabled = true
     )
     object Builds : Screen(
         route = "builds_screen",
@@ -265,7 +266,12 @@ fun nPCsApp(
             }
 
             // ── Placeholder routes for future screens ────────────────────
-            // composable(Screen.Search.route)  { SearchScreen(...) }
+            composable(Screen.Search.route) {
+                SearchScreen(
+                    gpuViewModel = gpuViewModel,
+                    onNavigateToGpuDetail = { gpuId -> navController.navigate("gpu_detail/$gpuId") }
+                )
+            }
             // composable(Screen.Profile.route) { ProfileScreen(...) }
         }
     }
